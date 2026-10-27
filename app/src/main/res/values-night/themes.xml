@@ -1,0 +1,4 @@
+<resources>
+    <!-- All colours resolve through values-night/colors.xml, so the base theme is shared. -->
+    <style name="Theme.PrintXpress" parent="Base.Theme.PrintXpress" />
+</resources>

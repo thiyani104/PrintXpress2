@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Print-shop backend (Supabase). Leave the placeholders to run the app fully offline.
+  See backend/SETUP.md. Use the PUBLIC anon / publishable key only. NEVER put the service_role key here.
+-->
+<resources>
+    <string name="supabase_url" translatable="false">YOUR_SUPABASE_URL</string>
+    <string name="supabase_anon_key" translatable="false">YOUR_SUPABASE_ANON_KEY</string>
+</resources>

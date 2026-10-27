@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="splash_bg">#052518</color>
+    <color name="colorPrimary">#8FD0AC</color>
+    <color name="colorPrimaryDark">#0B1F16</color>
+    <color name="colorAccent">#E8B93A</color>
+    <color name="colorOnPrimary">#00391F</color>
+    <color name="colorPrimaryContainer">#1E4D3A</color>
+    <color name="colorOnPrimaryContainer">#D3EBDD</color>
+    <color name="colorOnAccent">#241A00</color>
+    <color name="colorAccentContainer">#3D3000</color>
+
+    <color name="colorBackground">#111412</color>
+    <color name="colorSurface">#1B1F1C</color>
+    <color name="colorSurfaceVariant">#2A302C</color>
+    <color name="colorOutline">#39403B</color>
+    <color name="colorError">#F2B8B5</color>
+    <color name="textPrimary">#E6E9E6</color>
+    <color name="textSecondary">#A2ABA4</color>
+    <color name="scrim_soft">#33000000</color>
+
+    <color name="status_pending_bg">#3D3000</color>
+    <color name="status_pending_text">#F5C95B</color>
+    <color name="status_processing_bg">#12304F</color>
+    <color name="status_processing_text">#9CC4FF</color>
+    <color name="status_printing_bg">#2E1F4A</color>
+    <color name="status_printing_text">#D2B4FF</color>
+    <color name="status_completed_bg">#14361F</color>
+    <color name="status_completed_text">#8FD9A3</color>
+    <color name="status_cancelled_bg">#2A2E2B</color>
+    <color name="status_cancelled_text">#B4BAB6</color>
+</resources>

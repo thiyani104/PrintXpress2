@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrintXpress – Shop dashboard</title>
+<style>
+  :root {
+    --primary: #1E4D3A; --on-primary: #fff; --accent: #D4A017;
+    --bg: #F6F7F5; --surface: #fff; --surface-2: #ECEFEC; --outline: #D9DDD9;
+    --text: #1A1C1A; --muted: #5C645E; --error: #B3261E;
+    --pending-bg:#FFF1CC; --pending-fg:#8A5A00; --processing-bg:#DCEBFF; --processing-fg:#1C5BB5;
+    --printing-bg:#EBDDFB; --printing-fg:#6A2FB3; --completed-bg:#D5F0DD; --completed-fg:#137333;
+    --cancelled-bg:#E7E9E7; --cancelled-fg:#555B57;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary:#8FD0AC; --on-primary:#00391F; --accent:#E8B93A;
+      --bg:#111412; --surface:#1B1F1C; --surface-2:#2A302C; --outline:#39403B;
+      --text:#E6E9E6; --muted:#A2ABA4; --error:#F2B8B5;
+      --pending-bg:#3D3000; --pending-fg:#F5C95B; --processing-bg:#12304F; --processing-fg:#9CC4FF;
+      --printing-bg:#2E1F4A; --printing-fg:#D2B4FF; --completed-bg:#14361F; --completed-fg:#8FD9A3;
+      --cancelled-bg:#2A2E2B; --cancelled-fg:#B4BAB6;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  header { position:sticky; top:0; z-index:5; background:var(--surface); border-bottom:1px solid var(--outline);
+           display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:12px 20px; }
+  header h1 { font-size:18px; margin:0; margin-right:auto; display:flex; align-items:center; gap:10px; }
+  .logo { width:30px; height:30px; border-radius:8px; background:var(--primary); color:var(--on-primary);
+          display:grid; place-items:center; font-weight:800; font-size:13px; }
+  .btn { border:1px solid var(--outline); background:var(--surface); border-radius:10px; padding:8px 14px; cursor:pointer; }
+  .btn:hover { background:var(--surface-2); }
+  .btn.primary { background:var(--primary); color:var(--on-primary); border-color:var(--primary); font-weight:600; }
+  .btn.primary:hover { filter:brightness(1.08); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  input[type=text], input[type=email], input[type=password], input[type=search], select, textarea {
+    background:var(--surface); border:1px solid var(--outline); border-radius:10px; padding:9px 12px; width:100%; }
+  header input[type=search] { width:220px; } header select { width:auto; }
+  main { max-width:1100px; margin:0 auto; padding:20px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:18px; }
+  .stat { background:var(--surface); border:1px solid var(--outline); border-radius:14px; padding:14px 16px; }
+  .stat b { display:block; font-size:26px; } .stat span { color:var(--muted); font-size:13px; }
+  .list { display:grid; gap:10px; }
+  .order { background:var(--surface); border:1px solid var(--outline); border-radius:14px; padding:14px 16px;
+           display:grid; grid-template-columns:1fr auto; gap:6px 16px; cursor:pointer; text-align:left; width:100%; }
+  .order:hover { border-color:var(--primary); }
+  .order .id { font-weight:700; } .order .meta { color:var(--muted); font-size:13px; }
+  .order .total { font-weight:700; text-align:right; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; }
+  .badge.Pending { background:var(--pending-bg); color:var(--pending-fg); }
+  .badge.Processing { background:var(--processing-bg); color:var(--processing-fg); }
+  .badge.Printing { background:var(--printing-bg); color:var(--printing-fg); }
+  .badge.Completed { background:var(--completed-bg); color:var(--completed-fg); }
+  .badge.Cancelled { background:var(--cancelled-bg); color:var(--cancelled-fg); }
+  .new { background:var(--accent); color:#241A00; margin-left:8px; }
+  .empty { text-align:center; color:var(--muted); padding:60px 0; }
+  .center { min-height:100vh; display:grid; place-items:center; padding:20px; }
+  .card { background:var(--surface); border:1px solid var(--outline); border-radius:18px; padding:24px; width:100%; max-width:400px; }
+  .card h2 { margin:0 0 4px; } .card p { color:var(--muted); margin:0 0 16px; font-size:14px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 6px; }
+  .err { color:var(--error); font-size:13px; min-height:18px; margin-top:10px; }
+  dialog { border:none; border-radius:18px; padding:0; width:min(680px,94vw); max-height:90vh; background:var(--surface); color:var(--text); }
+  dialog::backdrop { background:rgba(0,0,0,.5); }
+  .dlg { padding:22px; overflow:auto; max-height:90vh; }
+  .dlg h2 { margin:0; } .sec { margin-top:18px; } .sec h3 { margin:0 0 8px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .kv { display:grid; grid-template-columns:130px 1fr; gap:6px 12px; font-size:14px; } .kv div:nth-child(odd){ color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:14px; } th,td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--outline); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:12px; } td.num, th.num { text-align:right; white-space:nowrap; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .row select { width:auto; min-width:170px; }
+  a { color:var(--primary); }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--text); color:var(--bg);
+           padding:10px 18px; border-radius:10px; font-size:14px; z-index:20; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- ============ Setup (shown only if the keys below are still placeholders) ============ -->
+<div id="setup" class="center hidden">
+  <div class="card">
+    <h2>Connect to Supabase</h2>
+    <p>Paste your project URL and public anon key (Project Settings → API). They are saved in this browser only.</p>
+    <label for="cfgUrl">Project URL</label><input id="cfgUrl" type="text" placeholder="https://xxxx.supabase.co">
+    <label for="cfgKey">Anon / publishable key</label><input id="cfgKey" type="text" placeholder="eyJ… or sb_publishable_…">
+    <div class="err" id="cfgErr"></div>
+    <button class="btn primary" id="cfgSave" style="width:100%;margin-top:6px">Save</button>
+  </div>
+</div>
+
+<!-- ============ Login ============ -->
+<div id="login" class="center hidden">
+  <form class="card" id="loginForm">
+    <div class="logo" style="margin-bottom:12px">PX</div>
+    <h2>Shop sign in</h2>
+    <p>Staff accounts are created in Supabase → Authentication → Users.</p>
+    <label for="email">Email</label><input id="email" type="email" autocomplete="username" required>
+    <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required>
+    <div class="err" id="loginErr"></div>
+    <button class="btn primary" style="width:100%;margin-top:6px" id="loginBtn">Sign in</button>
+  </form>
+</div>
+
+<!-- ============ Dashboard ============ -->
+<div id="app" class="hidden">
+  <header>
+    <h1><span class="logo">PX</span> PrintXpress · Shop</h1>
+    <input id="search" type="search" placeholder="Search order, name, phone…" aria-label="Search orders">
+    <select id="statusFilter" aria-label="Filter by status">
+      <option value="open">Open orders</option>
+      <option value="all">All</option>
+      <option value="Pending">Pending</option>
+      <option value="Processing">Processing</option>
+      <option value="Printing">Printing</option>
+      <option value="Completed">Completed</option>
+      <option value="Cancelled">Cancelled</option>
+    </select>
+    <button class="btn" id="refresh">Refresh</button>
+    <button class="btn" id="signOut">Sign out</button>
+  </header>
+  <main>
+    <div class="stats" id="stats"></div>
+    <div class="list" id="list"></div>
+  </main>
+</div>
+
+<dialog id="detail"><div class="dlg" id="detailBody"></div></dialog>
+<div class="toast hidden" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* ------------------------------------------------------------------
+   Optional: hard-code your keys here instead of using the setup screen.
+   Use ONLY the public anon/publishable key. Never the service_role key.
+------------------------------------------------------------------ */
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const STATUSES = ['Pending', 'Processing', 'Printing', 'Completed', 'Cancelled'];
+const $ = (id) => document.getElementById(id);
+
+let sb = null;
+let orders = [];
+let openOrderId = null;
+let refreshTimer = null;
+let knownIds = new Set();
+let firstLoad = true;
+
+/* ---------- tiny safe DOM helpers: customer text is ALWAYS inserted with textContent ---------- */
+function el(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') e.className = v;
+    else if (k === 'text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null) e.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  return e;
+}
+const money = (n) => 'Rs. ' + Number(n || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dt = (s) => s ? new Date(s).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '';
+const dOnly = (s) => s ? new Date(s + 'T00:00:00').toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+const displayId = (id) => '#' + id.replace(/-/g, '').slice(0, 8).toUpperCase();
+function badge(status, extra) { return el('span', { class: 'badge ' + (STATUSES.includes(status) ? status : ''), text: status }, extra); }
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.add('hidden'), 2600); }
+function show(id) { for (const s of ['setup', 'login', 'app']) $(s).classList.toggle('hidden', s !== id); }
+
+/* ---------- config / auth ---------- */
+function config() {
+  const url = SUPABASE_URL.startsWith('YOUR_') ? localStorage.getItem('px_url') : SUPABASE_URL;
+  const key = SUPABASE_ANON_KEY.startsWith('YOUR_') ? localStorage.getItem('px_key') : SUPABASE_ANON_KEY;
+  return { url, key };
+}
+
+async function boot() {
+  const { url, key } = config();
+  if (!url || !key) { show('setup'); return; }
+  sb = window.supabase.createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true } });
+  const { data } = await sb.auth.getSession();
+  if (data.session) await enterApp(); else show('login');
+}
+
+$('cfgSave').addEventListener('click', () => {
+  const url = $('cfgUrl').value.trim().replace(/\/+$/, ''), key = $('cfgKey').value.trim();
+  if (!/^https:\/\/.+/.test(url) || key.length < 20) { $('cfgErr').textContent = 'Enter a valid https URL and key.'; return; }
+  localStorage.setItem('px_url', url); localStorage.setItem('px_key', key); boot();
+});
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('loginErr').textContent = ''; $('loginBtn').disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+  $('loginBtn').disabled = false;
+  if (error) { $('loginErr').textContent = error.message; return; }
+  $('password').value = '';
+  enterApp();
+});
+
+$('signOut').addEventListener('click', async () => {
+  clearInterval(refreshTimer); orders = []; knownIds = new Set(); firstLoad = true;
+  await sb.removeAllChannels(); await sb.auth.signOut(); show('login');
+});
+
+async function enterApp() {
+  show('app');
+  await load();
+  clearInterval(refreshTimer); refreshTimer = setInterval(load, 20000);       // safety-net polling
+  sb.channel('orders-live').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => load()).subscribe();
+}
+
+/* ---------- data ---------- */
+async function load() {
+  const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false }).limit(500);
+  if (error) { toast('Could not load orders: ' + error.message); return; }
+  orders = data;
+  if (!firstLoad) {
+    const fresh = orders.filter((o) => !knownIds.has(o.id));
+    if (fresh.length) toast(fresh.length === 1 ? 'New order ' + displayId(fresh[0].id) : fresh.length + ' new orders');
+  }
+  knownIds = new Set(orders.map((o) => o.id)); firstLoad = false;
+  render();
+  if (openOrderId) { const o = orders.find((x) => x.id === openOrderId); if (o && $('detail').open) renderDetail(o, false); }
+}
+
+function render() {
+  const counts = Object.fromEntries(STATUSES.map((s) => [s, orders.filter((o) => o.status === s).length]));
+  const stats = $('stats'); stats.replaceChildren(
+    ...[['Pending', counts.Pending], ['Processing', counts.Processing], ['Printing', counts.Printing], ['Completed', counts.Completed]]
+      .map(([label, n]) => el('div', { class: 'stat' }, el('b', { text: n }), el('span', { text: label }))));
+
+  const f = $('statusFilter').value, q = $('search').value.trim().toLowerCase();
+  const rows = orders.filter((o) => {
+    if (f === 'open' && (o.status === 'Completed' || o.status === 'Cancelled')) return false;
+    if (f !== 'open' && f !== 'all' && o.status !== f) return false;
+    if (!q) return true;
+    return (displayId(o.id) + ' ' + o.customer_name + ' ' + o.customer_phone + ' ' + o.customer_email).toLowerCase().includes(q);
+  });
+  const list = $('list');
+  if (!rows.length) { list.replaceChildren(el('div', { class: 'empty', text: 'No orders to show.' })); return; }
+  list.replaceChildren(...rows.map((o) => el('button', { class: 'order', onclick: () => openDetail(o.id) },
+    el('div', null, el('span', { class: 'id', text: displayId(o.id) }), ' ', badge(o.status),
+       o.status === 'Pending' && Date.now() - new Date(o.created_at) < 3600e3 ? el('span', { class: 'badge new', text: 'NEW' }) : null),
+    el('div', { class: 'total', text: money(o.total) }),
+    el('div', { class: 'meta', text: o.customer_name + ' · ' + o.customer_phone + ' · ' + dt(o.created_at) }),
+    el('div', { class: 'meta', style: 'text-align:right', text: o.delivery_method + ' · ' + dOnly(o.delivery_date) }))));
+}
+$('search').addEventListener('input', render);
+$('statusFilter').addEventListener('change', render);
+$('refresh').addEventListener('click', () => { load(); toast('Refreshed'); });
+
+/* ---------- detail dialog ---------- */
+async function openDetail(id) {
+  openOrderId = id;
+  const o = orders.find((x) => x.id === id); if (!o) return;
+  $('detail').showModal();
+  await renderDetail(o, true);
+}
+$('detail').addEventListener('close', () => { openOrderId = null; });
+
+async function renderDetail(o, fetchItems) {
+  const body = $('detailBody');
+  if (fetchItems) body.replaceChildren(el('p', { text: 'Loading…' }));
+  let items = renderDetail._items && renderDetail._for === o.id ? renderDetail._items : null;
+  if (!items || fetchItems) {
+    const res = await sb.from('order_items').select('*').eq('order_id', o.id).order('id');
+    if (res.error) { body.replaceChildren(el('p', { class: 'err', text: res.error.message })); return; }
+    items = res.data; renderDetail._items = items; renderDetail._for = o.id;
+  }
+
+  const phone = String(o.customer_phone).replace(/[^0-9+]/g, '');
+  const statusSel = el('select', null, STATUSES.map((s) => el('option', { value: s, text: s })));
+  statusSel.value = o.status;
+  const notes = el('textarea', { rows: '3', maxlength: '1000', placeholder: 'Internal notes (only the shop sees these)' });
+  notes.value = o.shop_notes || '';
+  const saveBtn = el('button', { class: 'btn primary', text: 'Save changes' });
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    const patch = { status: statusSel.value, shop_notes: notes.value.trim() || null };
+    if (patch.status === 'Cancelled' && !o.cancel_reason) patch.cancel_reason = 'Cancelled by the print shop';
+    const { error } = await sb.from('orders').update(patch).eq('id', o.id);
+    saveBtn.disabled = false;
+    if (error) { toast('Save failed: ' + error.message); return; }
+    toast('Saved'); await load();
+  });
+
+  body.replaceChildren(
+    el('div', { class: 'row', style: 'justify-content:space-between' },
+      el('h2', { text: 'Order ' + displayId(o.id) }),
+      el('button', { class: 'btn', text: 'Close', onclick: () => $('detail').close() })),
+    el('div', { class: 'meta', style: 'color:var(--muted);margin:4px 0 0' }, badge(o.status), ' ' + dt(o.created_at)),
+    o.status === 'Cancelled' && o.cancel_reason ? el('p', { text: 'Reason: ' + o.cancel_reason }) : null,
+
+    el('div', { class: 'sec' }, el('h3', { text: 'Customer' }), el('div', { class: 'kv' },
+      el('div', { text: 'Name' }), el('div', { text: o.customer_name }),
+      el('div', { text: 'Phone' }), el('div', null, el('a', { href: 'tel:' + phone, text: o.customer_phone })),
+      el('div', { text: 'Email' }), el('div', null, el('a', { href: 'mailto:' + encodeURIComponent(o.customer_email), text: o.customer_email })))),
+
+    el('div', { class: 'sec' }, el('h3', { text: 'Delivery & payment' }), el('div', { class: 'kv' },
+      el('div', { text: 'Method' }), el('div', { text: o.delivery_method }),
+      el('div', { text: 'Address' }), el('div', { text: o.delivery_address || '—' }),
+      el('div', { text: 'Preferred date' }), el('div', { text: dOnly(o.delivery_date) }),
+      el('div', { text: 'Payment' }), el('div', { text: o.payment_method }))),
+
+    el('div', { class: 'sec' }, el('h3', { text: 'Items' }), el('div', { style: 'overflow-x:auto' }, el('table', null,
+      el('thead', null, el('tr', null, el('th', { text: 'Item' }), el('th', { class: 'num', text: 'Qty' }), el('th', { class: 'num', text: 'Unit' }), el('th', { class: 'num', text: 'Total' }))),
+      el('tbody', null, items.map((it) => el('tr', null,
+        el('td', null, el('b', { text: it.product_name }), it.spec ? el('div', { class: 'meta', style: 'color:var(--muted)', text: it.spec }) : null,
+          it.notes ? el('div', { style: 'margin-top:4px', text: 'Note: ' + it.notes }) : null,
+          it.file_path ? downloadButton(it) : el('div', { class: 'meta', style: 'color:var(--error)', text: 'No design file' })),
+        el('td', { class: 'num', text: it.quantity }), el('td', { class: 'num', text: money(it.unit_price) }),
+        el('td', { class: 'num', text: money(it.unit_price * it.quantity) }))))))),
+
+    el('div', { class: 'sec' }, el('div', { class: 'kv' },
+      el('div', { text: 'Subtotal' }), el('div', { text: money(o.subtotal) }),
+      Number(o.discount) > 0 ? el('div', { text: 'Discount' + (o.promo_code ? ' (' + o.promo_code + ')' : '') }) : null,
+      Number(o.discount) > 0 ? el('div', { text: '- ' + money(o.discount) }) : null,
+      el('div', { text: 'Delivery' }), el('div', { text: Number(o.delivery_fee) > 0 ? money(o.delivery_fee) : 'Free' }),
+      el('div', { text: 'Total' }), el('div', null, el('b', { text: money(o.total) })))),
+
+    el('div', { class: 'sec' }, el('h3', { text: 'Update order' }),
+      el('div', { class: 'row' }, statusSel, saveBtn), el('div', { style: 'margin-top:10px' }, notes)));
+}
+
+function downloadButton(it) {
+  const name = it.file_path.split('/').pop().replace(/^\d+_/, '');
+  const b = el('button', { class: 'btn', style: 'margin-top:6px', text: '⬇ Download design (' + name + ')' });
+  b.addEventListener('click', async () => {
+    b.disabled = true;
+    const { data, error } = await sb.storage.from('designs').createSignedUrl(it.file_path, 3600, { download: name });
+    b.disabled = false;
+    if (error) { toast('Could not get file: ' + error.message); return; }
+    const a = document.createElement('a'); a.href = data.signedUrl; a.rel = 'noopener'; document.body.append(a); a.click(); a.remove();
+  });
+  return b;
+}
+
+boot();
+</script>
+</body>
+</html>

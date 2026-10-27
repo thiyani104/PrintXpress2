@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="splash_bg">#052518</color>
+
+    <!-- Brand -->
+    <color name="colorPrimary">#1E4D3A</color>
+    <color name="colorPrimaryDark">#133326</color>
+    <color name="colorAccent">#D4A017</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorPrimaryContainer">#D3EBDD</color>
+    <color name="colorOnPrimaryContainer">#0A2A1D</color>
+    <color name="colorOnAccent">#241A00</color>
+    <color name="colorAccentContainer">#FFF1CC</color>
+
+    <!-- Neutrals (day) -->
+    <color name="colorBackground">#F6F7F5</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorSurfaceVariant">#ECEFEC</color>
+    <color name="colorOutline">#D9DDD9</color>
+    <color name="colorError">#B3261E</color>
+    <color name="textPrimary">#1A1C1A</color>
+    <color name="textSecondary">#5C645E</color>
+    <color name="scrim_soft">#14000000</color>
+
+    <!-- Order status badges -->
+    <color name="status_pending_bg">#FFF1CC</color>
+    <color name="status_pending_text">#8A5A00</color>
+    <color name="status_processing_bg">#DCEBFF</color>
+    <color name="status_processing_text">#1C5BB5</color>
+    <color name="status_printing_bg">#EBDDFB</color>
+    <color name="status_printing_text">#6A2FB3</color>
+    <color name="status_completed_bg">#D5F0DD</color>
+    <color name="status_completed_text">#137333</color>
+    <color name="status_cancelled_bg">#E7E9E7</color>
+    <color name="status_cancelled_text">#555B57</color>
+</resources>
